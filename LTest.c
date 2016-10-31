@@ -9,11 +9,13 @@
 #include <netpacket/packet.h>
 #include <netinet/if_ether.h>
 
+/* Setting for use DataLink */
 int InitRawSocket(char *device,int promiscFlag,int ipOnly){
 struct ifreq ifreq;
 struct sockaddr_ll sa;
 int soc;
 
+	/* IP Only */
 	if (ipOnly){
 		if((soc=socket(PF_PACKET, SOCK_RAW, htons(ETH_P_IP))) <0 ){
 			perror("socket");
@@ -21,6 +23,7 @@ int soc;
 
 		}
 
+	/* Broadcat ? */
 	} else {
 		if((soc=socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0){
 			perror("socket");
@@ -30,6 +33,7 @@ int soc;
 
 	}
 
+	/* Get interface index */
 	memset(&ifreq, 0, sizeof(struct ifreq));
 	strncpy(ifreq.ifr_name, device, sizeof(ifreq.ifr_name) - 1);
 	if (ioctl(soc, SIOCGIFINDEX, &ifreq) < 0){
@@ -39,6 +43,7 @@ int soc;
 
 	}
 
+	/* bind */
 	sa.sll_family=PF_PACKET;
 	if (ipOnly){
 		sa.sll_protocol=htons(ETH_P_IP);
@@ -57,6 +62,7 @@ int soc;
 
 	}
 
+	/* if able PromisC */
 	if (promiscFlag){
 		if (ioctl(soc, SIOCGIFFLAGS, &ifreq)<0){
 			perror("ioctl");
@@ -79,6 +85,7 @@ int soc;
 
 }
 
+/* Change to MAC Address */
 char *my_ether_ntoa_r(u_char *hwaddr,char *buf,socklen_t size){
 	snprintf(buf, size, "%02x:%02x:%02x:%02x:%02x:%02x", hwaddr[0], hwaddr[1], hwaddr[2], hwaddr[3], hwaddr[4], hwaddr[5]);
 
@@ -86,6 +93,7 @@ char *my_ether_ntoa_r(u_char *hwaddr,char *buf,socklen_t size){
 
 }
 
+/* Print EtherHeaderName */
 int PrintEtherHeader(struct ether_header *eh,FILE *fp){
 	char buf[80];
 
@@ -117,6 +125,7 @@ int PrintEtherHeader(struct ether_header *eh,FILE *fp){
 
 }
 
+/* Main */
 int main(int args, char *argv[], char *envp[]){
 	int soc, size;
 	u_char buf[2048];
@@ -154,3 +163,4 @@ int main(int args, char *argv[], char *envp[]){
 	return 0;
 
 }
+
